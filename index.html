@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fotocopiadora AEQ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-orange-50 text-zinc-900">
+<div class="max-w-7xl mx-auto p-6"><div class="fixed bottom-6 right-6 bg-orange-500 text-white px-4 py-3 rounded-full shadow-xl z-50">🛒 <span id="miniCount">0</span></div>
+<header class="text-center py-8"><img src="logo-aeq.png" alt="AEQ" class="h-24 mx-auto mb-4" />
+<h1 class="text-5xl md:text-7xl font-black text-orange-500">FOTOCOPIADORA AEQ</h1>
+<p class="max-w-4xl mx-auto mt-6 text-zinc-600 leading-relaxed">La fotocopiadora AEQ es un servicio organizado y gestionado desde la asociación de estudiantes para acercarnos y facilitarnos, entre estudiantes, materiales útiles para cursar dentro de Facultad de Química.</p>
+<p class="max-w-4xl mx-auto mt-2 text-zinc-600">También tiene como objetivo poder brindarle becas de trabajo a compañeras y compañeros, buscando facilitar sus trayectorias al poder trabajar y estudiar en el mismo lugar físico.</p>
+<p class="mt-3 text-orange-500 font-semibold">¡La fotocopiadora se sostiene entre todas y todos!</p>
+<p class="text-orange-500 font-semibold">¡Apoyá a las y los estudiantes, apoyá la fotocopiadora!</p>
+</header>
+<div class="grid md:grid-cols-3 gap-8 items-start">
+<div class="md:col-span-2 bg-white border rounded-3xl p-8 shadow">
+<input id="buscador" oninput="filtrar()" placeholder="🔎 Buscar materia o producto..." class="w-full mb-4 border rounded-xl px-4 py-3" />
+<div class="flex gap-3 mb-6 flex-wrap"><button onclick="mostrar('cuadernetas')" class="bg-orange-500 text-white px-4 py-2 rounded-xl">📚 Cuadernetas</button><button onclick="mostrar('tunicas')" class="bg-orange-100 text-orange-600 px-4 py-2 rounded-xl">🥼 Túnicas</button><button onclick="mostrar('reglas')" class="bg-orange-100 text-orange-600 px-4 py-2 rounded-xl">📏 Reglas</button></div><div id="catalogo"></div></div>
+<div class="bg-white border rounded-3xl p-8 shadow sticky top-6">
+<h2 class="text-3xl font-bold text-orange-500 mb-4">🛒 Comprar</h2>
+<div id="carrito" class="space-y-2 mb-4"><p class="text-zinc-500">Vacío</p></div><p class="font-bold text-xl mb-3">Total: <span id="total">$0</span></p><p class="text-zinc-600 mb-4">Completá tu pedido en el formulario oficial.</p>
+<a href="https://forms.gle/q8fMmTNTAEGhw2qv9" target="_blank" class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-xl mb-3">Ir al Formulario</a><a href="https://instagram.com/fotocopiadoraaeq" target="_blank" class="block w-full text-center bg-zinc-900 text-white p-3 rounded-xl">Consultar por Instagram</a>
+</div>
+</div>
+<footer class="mt-12 border-t pt-8 text-center text-zinc-600">
+<h3 class="text-2xl font-bold text-orange-500 mb-4">📩 Contacto</h3>
+<p>📷 Instagram: @fotocopiadoraaeq</p>
+<p>✉️ Mail: fotocoaeq@gmail.com</p>
+<p>🕒 Horario: 10 a 16hs en fotocopiadora</p>
+</footer><a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" class="fixed bottom-6 left-6 bg-zinc-900 text-white px-4 py-3 rounded-full shadow-xl z-50">⬆️</a>
+</div>
+<script>const productos={cuadernetas:[['1er Semestre',0,true],['Matemática A',610],['Matemática 01',630],['Matemática 03',665],['ICB1',545],['Manual de Datos',180],['Química General 1',740],['PRL',550],['3er Semestre',0,true],['Química Analítica 1 Laboratorio',500],['Química Analítica 1 Teórico',700],['Química Orgánica 101 Teórico',260],['Nomenclatura',240],['Inorgánica Teórico',700],['Inorgánica Laboratorio',230],['Matemática 05',800],['Física 102',500],['Carey',1600],['Tratamiento de Datos',250],['5to Semestre',0,true],['Química Analítica 3 Laboratorio',600],['Química Analítica 3 Teórico',550],['Química Orgánica 103 Laboratorio',280],['Química Orgánica 104',160],['Fisicoquímica 103 Laboratorio',450],['Fisicoquímica 103 Teórico',430],['Matemática 06',400],['Lehninger',1400],['7mo Semestre',0,true],['Parasitología',730],['SIG',150],['Bacteriología y Micología',250]],tunicas:[['Túnica Normal',1100,'tunica-normal.jpg'],['Túnica Estampada Química',1250,'tunica-estampada.jpg'],['Túnica Estampada Medicina',1250,'tunica-estampada.jpg']],reglas:[['Regla Orgánica Chica',170,'regla-chica.jpg'],['Regla Orgánica Mediana',200,'regla-mediana.jpg'],['Regla Orgánica Grande',230,'regla-grande.jpg'],['Regla Orgánica Flexible',230,'regla-flexible.jpg']]};let carrito=[];let categoriaActual='cuadernetas';function toast(msg){const t=document.createElement('div');t.className='fixed top-6 right-6 bg-orange-500 text-white px-4 py-3 rounded-xl shadow z-50';t.innerText=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1400)}function mostrar(cat){categoriaActual=cat;const box=document.getElementById('catalogo');box.innerHTML='';let abierto=true;productos[cat].forEach((p,i)=>{if(cat==='cuadernetas' && p[2]){const id='sem'+i;box.innerHTML+=`<button onclick="toggleSem('${id}')" class="w-full text-left text-xl font-bold text-orange-500 mt-4 mb-2 border-b pb-2">${p[0]} ▼</button><div id="${id}" class="space-y-3">`;abierto=true;}else{box.innerHTML+=`<div class="flex justify-between items-center gap-3 border rounded-xl p-3 mb-3 hover:shadow transition">${p[2]&&!p[2].toString().includes('true')?`<img src="${p[2]}" class="h-16 w-16 object-cover rounded-lg">`:''}<span class="flex-1">${p[0]} ${p[1]>0?'- $'+p[1]:''}</span><button onclick="agregar('${p[0]}',${p[1]})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl">Agregar</button></div>`;if(cat==='cuadernetas'){const next=productos[cat][i+1];if(next&&next[2]){box.innerHTML+='</div>';}}}});if(cat==='cuadernetas'){box.innerHTML+='</div>';}}function agregar(n,p){carrito.push([n,p]);render();toast('✅ '+n+' agregado')}function filtrar(){const q=document.getElementById('buscador').value.toLowerCase();if(q===''){mostrar(categoriaActual);return;}const box=document.getElementById('catalogo');box.innerHTML='';productos[categoriaActual].forEach(p=>{if(!p[2]&&p[0].toLowerCase().includes(q)){box.innerHTML+=`<div class="flex justify-between items-center gap-3 border rounded-xl p-3 mb-3 hover:shadow transition">${p[2]?`<img src="${p[2]}" class="h-16 w-16 object-cover rounded-lg">`:''}<span class="flex-1">${p[0]} ${p[1]>0?'- $'+p[1]:''}</span><button onclick="agregar('${p[0]}',${p[1]})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl">Agregar</button></div>`;}})}function toggleSem(id){const e=document.getElementById(id);e.style.display=e.style.display==='none'?'block':'none';}function borrar(i){carrito.splice(i,1);render()}function render(){const c=document.getElementById('carrito');const t=document.getElementById('total');let suma=0;c.innerHTML='';if(carrito.length===0){c.innerHTML='<p class="text-zinc-500">Vacío</p>';}carrito.forEach((x,i)=>{suma+=x[1];c.innerHTML+=`<div class="flex justify-between border-b py-2"><span>${x[0]} - $${x[1]}</span><button onclick="borrar(${i})" class="text-red-500">✕</button></div>`});t.innerText='$'+suma;document.getElementById('miniCount').innerText=carrito.length;}mostrar('cuadernetas');</script></body>
+</html>

@@ -66,7 +66,7 @@
   </p>
 
   <p class="text-zinc-600 mb-4">
-    Completá tu pedido. El total se verifica automáticamente antes de guardarse.
+    Las cuadernetas usan cupo diario. Las túnicas y reglas dependen del stock disponible.
   </p>
 
   <button onclick="comprar()" class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-xl mb-3 font-bold shadow">
@@ -90,7 +90,7 @@
 </div>
 
 <script>
-const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxo1KRuBpJyAtWQ4x34Wo0jA8lOXOoxS-idcxw-brX5q9CCrOLE2t4pgoDbtV_bXpt1/exec";
+const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwBQVE-X25kWc1y-kOvcIg2LI1bvEhHft2ZuhC9RxskwjURiXy8ypRnsLzYNOzkR1nP/exec";
 
 const productos = {
   cuadernetas: [
@@ -147,6 +147,20 @@ const productos = {
 
 let carrito = [];
 let categoriaActual = 'cuadernetas';
+let stockProductos = {};
+let disponibilidadCuadernetas = [];
+
+function esTunica(nombre){
+  return nombre.toLowerCase().includes("túnica");
+}
+
+function esRegla(nombre){
+  return nombre.toLowerCase().includes("regla");
+}
+
+function esCuaderneta(nombre){
+  return !esTunica(nombre) && !esRegla(nombre);
+}
 
 function toast(msg){
   const t = document.createElement('div');
@@ -154,6 +168,32 @@ function toast(msg){
   t.innerText = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 1600);
+}
+
+async function cargarEstado(){
+  try {
+    const respuesta = await fetch(URL_APPS_SCRIPT + "?accion=estado");
+    const data = await respuesta.json();
+
+    stockProductos = data.stock || {};
+    disponibilidadCuadernetas = data.disponibilidad || [];
+
+  } catch(error) {
+    stockProductos = {};
+    disponibilidadCuadernetas = [];
+  }
+}
+
+function stockDisponibleProducto(nombre){
+  if(esCuaderneta(nombre)){
+    return 9999;
+  }
+
+  return stockProductos[nombre] ?? 0;
+}
+
+function cantidadEnCarrito(nombre){
+  return carrito.filter(x => x[0] === nombre).length;
 }
 
 function mostrar(cat){
@@ -198,24 +238,55 @@ function mostrar(cat){
 
 function cardProducto(p){
   const tieneImagen = p[2] && p[2] !== true;
+  const nombre = p[0];
+
+  let infoStock = "";
+  let sinStock = false;
+
+  if(esCuaderneta(nombre)){
+    infoStock = "Cupo diario compartido";
+  } else {
+    const stock = stockDisponibleProducto(nombre);
+    const enCarrito = cantidadEnCarrito(nombre);
+    const restante = stock - enCarrito;
+
+    sinStock = restante <= 0;
+    infoStock = sinStock ? "Sin stock" : "Stock disponible: " + restante;
+  }
 
   return `
-    <div class="flex justify-between items-center gap-4 border border-zinc-200 rounded-2xl p-4 mb-3 hover:shadow-md transition bg-white">
-      ${tieneImagen ? `<img src="${p[2]}" alt="${p[0]}" class="h-20 w-20 object-cover rounded-xl border">` : ''}
+    <div class="flex justify-between items-center gap-4 border border-zinc-200 rounded-2xl p-4 mb-3 hover:shadow-md transition bg-white ${sinStock ? 'opacity-50' : ''}">
+      ${tieneImagen ? `<img src="${p[2]}" alt="${nombre}" class="h-20 w-20 object-cover rounded-xl border">` : ''}
+
       <div class="flex-1">
-        <p class="font-bold text-lg">${p[0]}</p>
+        <p class="font-bold text-lg">${nombre}</p>
         <p class="text-orange-500 font-black">$${p[1]}</p>
+        <p class="text-sm ${sinStock ? 'text-red-500 font-bold' : 'text-zinc-500'}">${infoStock}</p>
       </div>
-      <button onclick="agregar('${p[0]}',${p[1]})" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold">
-        Agregar
-      </button>
+
+      ${
+        sinStock
+        ? `<button disabled class="bg-zinc-300 text-zinc-600 px-5 py-3 rounded-xl font-bold cursor-not-allowed">Sin stock</button>`
+        : `<button onclick="agregar('${nombre}',${p[1]})" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold">Agregar</button>`
+      }
     </div>
   `;
 }
 
 function agregar(nombre, precio){
+  if(!esCuaderneta(nombre)){
+    const stock = stockDisponibleProducto(nombre);
+    const enCarrito = cantidadEnCarrito(nombre);
+
+    if(enCarrito >= stock){
+      alert("No hay más stock disponible de " + nombre);
+      return;
+    }
+  }
+
   carrito.push([nombre, precio]);
   render();
+  mostrar(categoriaActual);
   toast('✅ ' + nombre + ' agregado');
 }
 
@@ -245,6 +316,7 @@ function toggleSem(id){
 function borrar(i){
   carrito.splice(i,1);
   render();
+  mostrar(categoriaActual);
 }
 
 function render(){
@@ -281,32 +353,31 @@ function scrollCarrito(){
 }
 
 function hayTunicaEnCarrito(){
-  return carrito.some(x => x[0].toLowerCase().includes("túnica"));
+  return carrito.some(x => esTunica(x[0]));
 }
 
 function hayCuadernetaEnCarrito(){
-  return carrito.some(x => {
-    const nombre = x[0].toLowerCase();
-    return !nombre.includes("túnica") && !nombre.includes("regla");
-  });
+  return carrito.some(x => esCuaderneta(x[0]));
 }
 
-async function obtenerOpcionesFechaCuaderneta(){
-  try {
-    const respuesta = await fetch(URL_APPS_SCRIPT + "?accion=disponibilidad");
-    const fechas = await respuesta.json();
+function cantidadCuadernetasCarrito(){
+  return carrito.filter(x => esCuaderneta(x[0])).length;
+}
 
-    if(fechas.length === 0){
-      return `<option value="">No hay fechas disponibles</option>`;
-    }
+function generarOpcionesFechaCuaderneta(){
+  const cantidad = cantidadCuadernetasCarrito();
 
-    return fechas.map(f => {
-      return `<option value="${f.fecha}">${f.fecha} — ${f.disponibles} cupos disponibles</option>`;
-    }).join("");
+  const disponibles = disponibilidadCuadernetas.filter(f => {
+    return Number(f.disponibles) >= cantidad;
+  });
 
-  } catch(error) {
-    return `<option value="">Error cargando fechas</option>`;
+  if(disponibles.length === 0){
+    return `<option value="">No hay fechas disponibles</option>`;
   }
+
+  return disponibles.map(f => {
+    return `<option value="${f.fecha}">${f.fecha} — ${f.disponibles} cupos disponibles</option>`;
+  }).join("");
 }
 
 async function comprar(){
@@ -315,6 +386,7 @@ async function comprar(){
     return;
   }
 
+  await cargarEstado();
   await abrirFormularioPedido();
 }
 
@@ -325,7 +397,7 @@ async function abrirFormularioPedido(){
   let opcionesFechas = "";
 
   if(tieneCuaderneta){
-    opcionesFechas = await obtenerOpcionesFechaCuaderneta();
+    opcionesFechas = generarOpcionesFechaCuaderneta();
   }
 
   const modal = document.createElement("div");
@@ -390,7 +462,7 @@ async function abrirFormularioPedido(){
             </select>
 
             <p class="text-sm text-zinc-600 mt-2">
-              Solo aparecen fechas con cupos disponibles. Máximo: 25 cuadernetas por día.
+              Las cuadernetas comparten cupo diario entre todas las materias.
             </p>
           </div>
         ` : ""
@@ -447,23 +519,18 @@ function enviarPedido(){
     fechaCuaderneta = document.getElementById("pedidoFechaCuaderneta").value;
 
     if(!fechaCuaderneta){
-      alert("Seleccioná una fecha para retirar la cuaderneta.");
-      return;
-    }
-
-    if(fechaCuaderneta === "No hay fechas disponibles" || fechaCuaderneta === "Error cargando fechas"){
-      alert("No hay fechas disponibles para cuadernetas.");
+      alert("Seleccioná una fecha disponible para retirar la cuaderneta.");
       return;
     }
   }
 
   const productosPedido = carrito.map(x => {
-    const esTunica = x[0].toLowerCase().includes("túnica");
+    const tunica = esTunica(x[0]);
 
     return {
       nombre: x[0],
-      talle: esTunica ? talle : "",
-      entallada: esTunica ? entallada : ""
+      talle: tunica ? talle : "",
+      entallada: tunica ? entallada : ""
     };
   });
 
@@ -485,13 +552,19 @@ function enviarPedido(){
     carrito = [];
     render();
     cerrarFormularioPedido();
+
+    cargarEstado().then(() => {
+      mostrar(categoriaActual);
+    });
   })
   .catch(() => {
     alert("Hubo un error al enviar el pedido.");
   });
 }
 
-mostrar('cuadernetas');
+cargarEstado().then(() => {
+  mostrar('cuadernetas');
+});
 </script>
 
 </body>

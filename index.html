@@ -27,15 +27,11 @@
   </h1>
 
   <p class="max-w-4xl mx-auto mt-6 text-zinc-600 leading-relaxed text-lg">
-    La fotocopiadora AEQ es un servicio organizado y gestionado desde la asociación de estudiantes para acercarnos y facilitarnos materiales útiles para cursar dentro de Facultad de Química.
-  </p>
-
-  <p class="max-w-4xl mx-auto mt-3 text-zinc-600 text-lg">
-    También tiene como objetivo brindar becas de trabajo a compañeras y compañeros.
+    La fotocopiadora AEQ es un servicio organizado y gestionado desde la asociación de estudiantes.
   </p>
 
   <div class="mt-6 inline-block bg-orange-100 border border-orange-200 text-orange-600 font-bold rounded-2xl px-6 py-4">
-    ¡Apoyá a las y los estudiantes, apoyá la fotocopiadora!
+    ¡Apoyá a las y los estudiantes!
   </div>
 </header>
 
@@ -43,39 +39,41 @@
 
 <main class="md:col-span-2 bg-white border border-orange-100 rounded-3xl p-8 shadow-lg">
 
-  <input id="buscador" oninput="filtrar()" placeholder="🔎 Buscar materia o producto..." class="w-full mb-5 border border-zinc-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400" />
+<input id="buscador" oninput="filtrar()" placeholder="🔎 Buscar..." class="w-full mb-5 border border-zinc-200 rounded-xl px-4 py-3">
 
-  <div class="flex gap-3 mb-6 flex-wrap">
-    <button id="btn-cuadernetas" onclick="mostrar('cuadernetas')" class="px-5 py-3 rounded-xl font-bold">📚 Cuadernetas</button>
-    <button id="btn-tunicas" onclick="mostrar('tunicas')" class="px-5 py-3 rounded-xl font-bold">🥼 Túnicas</button>
-    <button id="btn-reglas" onclick="mostrar('reglas')" class="px-5 py-3 rounded-xl font-bold">📏 Reglas</button>
-  </div>
+<div class="flex gap-3 mb-6 flex-wrap">
+  <button id="btn-cuadernetas" onclick="mostrar('cuadernetas')" class="px-5 py-3 rounded-xl font-bold">📚 Cuadernetas</button>
+  <button id="btn-tunicas" onclick="mostrar('tunicas')" class="px-5 py-3 rounded-xl font-bold">🥼 Túnicas</button>
+  <button id="btn-reglas" onclick="mostrar('reglas')" class="px-5 py-3 rounded-xl font-bold">📏 Reglas</button>
+</div>
 
-  <div id="catalogo"></div>
+<div id="catalogo"></div>
+
 </main>
 
 <aside id="panelCarrito" class="bg-white border border-orange-100 rounded-3xl p-8 shadow-lg sticky top-6">
-  <h2 class="text-3xl font-black text-orange-500 mb-4">🛒 Comprar</h2>
+<h2 class="text-3xl font-black text-orange-500 mb-4">🛒 Comprar</h2>
 
-  <div id="carrito" class="space-y-2 mb-4">
-    <p class="text-zinc-500">Vacío</p>
-  </div>
+<div id="carrito" class="space-y-2 mb-4">
+  <p class="text-zinc-500">Vacío</p>
+</div>
 
-  <p class="font-black text-2xl mb-4">
-    Total: <span id="total" class="text-orange-500">$0</span>
-  </p>
+<p class="font-black text-2xl mb-4">
+  Total: <span id="total" class="text-orange-500">$0</span>
+</p>
 
-  <p class="text-zinc-600 mb-4">
-    Las cuadernetas usan cupo diario. Las túnicas y reglas dependen del stock disponible.
-  </p>
+<p class="text-zinc-600 mb-4">
+  Las cuadernetas usan cupo diario. Las túnicas y reglas dependen del stock disponible.
+</p>
 
-  <button onclick="comprar()" class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-xl mb-3 font-bold shadow">
-    Comprar Ahora
-  </button>
+<button onclick="comprar()" class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-xl mb-3 font-bold shadow">
+  Comprar Ahora
+</button>
 
-  <a href="https://instagram.com/fotocopiadoraaeq" target="_blank" class="block w-full text-center bg-zinc-900 hover:bg-zinc-800 text-white p-4 rounded-xl font-bold">
-    Consultar por Instagram
-  </a>
+<a href="https://instagram.com/fotocopiadoraaeq" target="_blank" class="block w-full text-center bg-zinc-900 hover:bg-zinc-800 text-white p-4 rounded-xl font-bold">
+  Consultar por Instagram
+</a>
+
 </aside>
 
 </div>
@@ -90,7 +88,7 @@
 </div>
 
 <script>
-const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzO6WlKQ19th6f2MZDOPT4BCt1MLWXTSXUz7k1f6PGf9av5fAd9gBe145q_2aPx5op4/exec";
+const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwRmON98vGYczPSwLyV2eZYy7JdbKjt1tR-1cxh1z0EU8b4rPrOGzgRYdRTHfJpPaFX/exec";
 
 const productos = {
   cuadernetas: [
@@ -162,6 +160,28 @@ function esCuaderneta(nombre){
   return !esTunica(nombre) && !esRegla(nombre);
 }
 
+async function cargarEstado(){
+  try {
+    const respuesta = await fetch(URL_APPS_SCRIPT + "?accion=estado");
+    const data = await respuesta.json();
+
+    stockProductos = data.stock || {};
+    disponibilidadCuadernetas = data.disponibilidad || [];
+  } catch(error) {
+    stockProductos = {};
+    disponibilidadCuadernetas = [];
+  }
+}
+
+function stockDisponibleProducto(nombre){
+  if(esCuaderneta(nombre)) return 9999;
+  return stockProductos[nombre] ?? 0;
+}
+
+function cantidadEnCarrito(nombre){
+  return carrito.filter(x => x[0] === nombre).length;
+}
+
 function toast(msg){
   const t = document.createElement('div');
   t.className = 'fixed top-6 right-6 bg-orange-500 text-white px-5 py-4 rounded-xl shadow z-50 font-bold';
@@ -170,39 +190,14 @@ function toast(msg){
   setTimeout(() => t.remove(), 1600);
 }
 
-async function cargarEstado(){
-  try {
-    const respuesta = await fetch(URL_APPS_SCRIPT + "?accion=estado");
-    const data = await respuesta.json();
-
-    stockProductos = data.stock || {};
-    disponibilidadCuadernetas = data.disponibilidad || [];
-
-  } catch(error) {
-    stockProductos = {};
-    disponibilidadCuadernetas = [];
-  }
-}
-
-function stockDisponibleProducto(nombre){
-  if(esCuaderneta(nombre)){
-    return 9999;
-  }
-
-  return stockProductos[nombre] ?? 0;
-}
-
-function cantidadEnCarrito(nombre){
-  return carrito.filter(x => x[0] === nombre).length;
-}
-
 function mostrar(cat){
   categoriaActual = cat;
 
   ['cuadernetas','tunicas','reglas'].forEach(x => {
     const b = document.getElementById('btn-' + x);
+
     if(b){
-      b.className = 'px-5 py-3 rounded-xl font-bold transition ' + 
+      b.className = 'px-5 py-3 rounded-xl font-bold transition ' +
       (x === cat ? 'bg-orange-500 text-white shadow' : 'bg-orange-100 text-orange-600 hover:bg-orange-200');
     }
   });
@@ -213,6 +208,7 @@ function mostrar(cat){
   productos[cat].forEach((p,i) => {
     if(cat === 'cuadernetas' && p[2] === true){
       const id = 'sem' + i;
+
       box.innerHTML += `
         <button onclick="toggleSem('${id}')" class="w-full text-left text-2xl font-black text-orange-500 mt-6 mb-3 border-b border-orange-200 pb-2">
           ${p[0]} ▼
@@ -224,6 +220,7 @@ function mostrar(cat){
 
       if(cat === 'cuadernetas'){
         const next = productos[cat][i + 1];
+
         if(next && next[2] === true){
           box.innerHTML += '</div>';
         }
@@ -360,16 +357,8 @@ function hayCuadernetaEnCarrito(){
   return carrito.some(x => esCuaderneta(x[0]));
 }
 
-function cantidadCuadernetasCarrito(){
-  return carrito.filter(x => esCuaderneta(x[0])).length;
-}
-
 function generarOpcionesFechaCuaderneta(){
-  const cantidad = cantidadCuadernetasCarrito();
-
-  const disponibles = disponibilidadCuadernetas.filter(f => {
-    return Number(f.disponibles) >= cantidad;
-  });
+  const disponibles = disponibilidadCuadernetas;
 
   if(disponibles.length === 0){
     return `<option value="">No hay fechas disponibles</option>`;
@@ -387,10 +376,10 @@ async function comprar(){
   }
 
   await cargarEstado();
-  await abrirFormularioPedido();
+  abrirFormularioPedido();
 }
 
-async function abrirFormularioPedido(){
+function abrirFormularioPedido(){
   const tieneTunica = hayTunicaEnCarrito();
   const tieneCuaderneta = hayCuadernetaEnCarrito();
 
@@ -407,7 +396,6 @@ async function abrirFormularioPedido(){
   modal.innerHTML = `
     <div class="bg-white rounded-3xl p-6 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
       <h2 class="text-3xl font-black text-orange-500 mb-2">Finalizar pedido</h2>
-      <p class="text-zinc-600 mb-5">Completá tus datos para registrar el pedido.</p>
 
       <div class="mb-5 bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm">
         <p class="font-black text-orange-500 mb-2">Resumen del pedido</p>
@@ -418,7 +406,7 @@ async function abrirFormularioPedido(){
       <label class="block mb-2 font-bold">Nombre completo</label>
       <input id="pedidoNombre" class="w-full border rounded-xl px-4 py-3 mb-4" placeholder="Ej: Juan Pérez">
 
-      <label class="block mb-2 font-bold">Número de celular</label>
+      <label class="block mb-2 font-bold">Celular</label>
       <input id="pedidoCelular" class="w-full border rounded-xl px-4 py-3 mb-4" placeholder="Ej: 099123456">
 
       <label class="block mb-2 font-bold">Mail</label>
@@ -431,7 +419,7 @@ async function abrirFormularioPedido(){
 
             <label class="block mb-2 font-bold">Talle</label>
             <select id="pedidoTalle" class="w-full border rounded-xl px-4 py-3 mb-4">
-              <option value="">Seleccionar talle</option>
+              <option value="">Seleccionar</option>
               <option>XS</option>
               <option>S</option>
               <option>M</option>
@@ -442,12 +430,12 @@ async function abrirFormularioPedido(){
 
             <label class="block mb-2 font-bold">¿Entallada?</label>
             <select id="pedidoEntallada" class="w-full border rounded-xl px-4 py-3">
-              <option value="">Seleccionar opción</option>
+              <option value="">Seleccionar</option>
               <option>Sí</option>
               <option>No</option>
             </select>
           </div>
-        ` : ""
+        ` : ''
       }
 
       ${
@@ -465,12 +453,12 @@ async function abrirFormularioPedido(){
               Las cuadernetas comparten cupo diario entre todas las materias.
             </p>
           </div>
-        ` : ""
+        ` : ''
       }
 
       <div class="flex gap-3">
         <button onclick="enviarPedido()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-xl font-bold">
-          Enviar pedido
+          Ir a pagar
         </button>
 
         <button onclick="cerrarFormularioPedido()" class="flex-1 bg-zinc-200 hover:bg-zinc-300 p-4 rounded-xl font-bold">
@@ -485,7 +473,10 @@ async function abrirFormularioPedido(){
 
 function cerrarFormularioPedido(){
   const modal = document.getElementById("modalPedido");
-  if(modal) modal.remove();
+
+  if(modal){
+    modal.remove();
+  }
 }
 
 function enviarPedido(){
@@ -494,7 +485,7 @@ function enviarPedido(){
   const mail = document.getElementById("pedidoMail").value.trim();
 
   if(!nombre || !celular || !mail){
-    alert("Completá nombre, celular y mail.");
+    alert("Completá todos los campos.");
     return;
   }
 
@@ -510,7 +501,7 @@ function enviarPedido(){
     entallada = document.getElementById("pedidoEntallada").value;
 
     if(!talle || !entallada){
-      alert("Completá talle y si la túnica es entallada o no.");
+      alert("Completá datos de túnica.");
       return;
     }
   }
@@ -519,7 +510,7 @@ function enviarPedido(){
     fechaCuaderneta = document.getElementById("pedidoFechaCuaderneta").value;
 
     if(!fechaCuaderneta){
-      alert("Seleccioná una fecha disponible para retirar la cuaderneta.");
+      alert("Seleccioná fecha.");
       return;
     }
   }
@@ -542,24 +533,18 @@ function enviarPedido(){
     fechaCuaderneta
   };
 
-  fetch(URL_APPS_SCRIPT, {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify(pedido)
-  })
-  .then(() => {
-    alert("Pedido enviado correctamente.");
-    carrito = [];
-    render();
-    cerrarFormularioPedido();
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = URL_APPS_SCRIPT;
+  form.style.display = "none";
 
-    cargarEstado().then(() => {
-      mostrar(categoriaActual);
-    });
-  })
-  .catch(() => {
-    alert("Hubo un error al enviar el pedido.");
-  });
+  const input = document.createElement("input");
+  input.name = "payload";
+  input.value = JSON.stringify(pedido);
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
 }
 
 cargarEstado().then(() => {

@@ -1,4 +1,284 @@
-const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwfeAZoSTTM2JgT2ecv5AN2evICUL9NAC5NuS8bkXAgssYFyTMOM7I9wZTtGrxVq0JZ/exec";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fotocopiadora AEQ</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-orange-50 text-zinc-900">
+
+<button onclick="scrollCarrito()" class="fixed bottom-6 right-6 bg-orange-500 hover:bg-orange-600 text-white px-5 py-4 rounded-full shadow-xl z-40 flex items-center gap-2 font-bold">
+  🛒 <span id="miniCount">0</span>
+</button>
+
+<a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" class="fixed bottom-6 left-6 bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-3 rounded-full shadow-xl z-40">
+  ⬆️
+</a>
+
+<div class="max-w-7xl mx-auto p-6">
+
+<header id="top" class="text-center py-10">
+  <img src="logo-aeq.png" alt="AEQ" class="h-24 mx-auto mb-5" />
+
+  <h1 class="text-5xl md:text-7xl font-black text-orange-500 tracking-tight">
+    FOTOCOPIADORA AEQ
+  </h1>
+
+  <p class="max-w-4xl mx-auto mt-6 text-zinc-600 leading-relaxed text-lg">
+    La fotocopiadora AEQ es un servicio organizado y gestionado desde la asociación de estudiantes para acercarnos y facilitarnos, entre estudiantes, materiales útiles para cursar dentro de Facultad de Química.
+  </p>
+
+  <p class="max-w-4xl mx-auto mt-3 text-zinc-600 text-lg">
+    También tiene como objetivo poder brindarle becas de trabajo a compañeras y compañeros, buscando facilitar sus trayectorias al poder trabajar y estudiar en el mismo lugar físico.
+  </p>
+
+  <div class="mt-6 inline-block bg-orange-100 border border-orange-200 text-orange-600 font-bold rounded-2xl px-6 py-4">
+    ¡Apoyá a las y los estudiantes, apoyá la fotocopiadora!
+  </div>
+</header>
+
+<div class="grid md:grid-cols-3 gap-8 items-start">
+
+<main class="md:col-span-2 bg-white border border-orange-100 rounded-3xl p-8 shadow-lg">
+
+  <input id="buscador" oninput="filtrar()" placeholder="🔎 Buscar materia o producto..." class="w-full mb-5 border border-zinc-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400" />
+
+  <div class="flex gap-3 mb-6 flex-wrap">
+    <button id="btn-cuadernetas" onclick="mostrar('cuadernetas')" class="px-5 py-3 rounded-xl font-bold">📚 Cuadernetas</button>
+    <button id="btn-tunicas" onclick="mostrar('tunicas')" class="px-5 py-3 rounded-xl font-bold">🥼 Túnicas</button>
+    <button id="btn-reglas" onclick="mostrar('reglas')" class="px-5 py-3 rounded-xl font-bold">📏 Reglas</button>
+  </div>
+
+  <div id="catalogo"></div>
+</main>
+
+<aside id="panelCarrito" class="bg-white border border-orange-100 rounded-3xl p-8 shadow-lg sticky top-6">
+  <h2 class="text-3xl font-black text-orange-500 mb-4">🛒 Comprar</h2>
+
+  <div id="carrito" class="space-y-2 mb-4">
+    <p class="text-zinc-500">Vacío</p>
+  </div>
+
+  <p class="font-black text-2xl mb-4">
+    Total: <span id="total" class="text-orange-500">$0</span>
+  </p>
+
+  <p class="text-zinc-600 mb-4">
+    Completá tu pedido. El total se verifica automáticamente antes de guardarse.
+  </p>
+
+  <button onclick="comprar()" class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-xl mb-3 font-bold shadow">
+    Comprar Ahora
+  </button>
+
+  <a href="https://instagram.com/fotocopiadoraaeq" target="_blank" class="block w-full text-center bg-zinc-900 hover:bg-zinc-800 text-white p-4 rounded-xl font-bold">
+    Consultar por Instagram
+  </a>
+</aside>
+
+</div>
+
+<footer class="mt-12 border-t border-orange-200 pt-8 text-center text-zinc-600 pb-10">
+  <h3 class="text-2xl font-black text-orange-500 mb-4">📩 Contacto</h3>
+  <p>📷 Instagram: @fotocopiadoraaeq</p>
+  <p>✉️ Mail: fotocoaeq@gmail.com</p>
+  <p>🕒 Horario: 10 a 16hs en fotocopiadora</p>
+</footer>
+
+</div>
+
+<script>
+const URL_APPS_SCRIPT = "PEGÁ_ACÁ_TU_URL_DE_APPS_SCRIPT";
+
+const productos = {
+  cuadernetas: [
+    ['1er Semestre',0,true],
+    ['Matemática A',610],
+    ['Matemática 01',630],
+    ['Matemática 03',665],
+    ['ICB1',545],
+    ['Manual de Datos',180],
+    ['Química General 1',740],
+    ['PRL',550],
+
+    ['3er Semestre',0,true],
+    ['Química Analítica 1 Laboratorio',500],
+    ['Química Analítica 1 Teórico',700],
+    ['Química Orgánica 101 Teórico',260],
+    ['Nomenclatura',240],
+    ['Inorgánica Teórico',700],
+    ['Inorgánica Laboratorio',230],
+    ['Matemática 05',800],
+    ['Física 102',500],
+    ['Carey',1600],
+    ['Tratamiento de Datos',250],
+
+    ['5to Semestre',0,true],
+    ['Química Analítica 3 Laboratorio',600],
+    ['Química Analítica 3 Teórico',550],
+    ['Química Orgánica 103 Laboratorio',280],
+    ['Química Orgánica 104',160],
+    ['Fisicoquímica 103 Laboratorio',450],
+    ['Fisicoquímica 103 Teórico',430],
+    ['Matemática 06',400],
+    ['Lehninger',1400],
+
+    ['7mo Semestre',0,true],
+    ['Parasitología',730],
+    ['SIG',150],
+    ['Bacteriología y Micología',250]
+  ],
+
+  tunicas: [
+    ['Túnica Normal',1100,'tunica-normal.jpg'],
+    ['Túnica Estampada Química',1250,'tunica-estampada.jpg'],
+    ['Túnica Estampada Medicina',1250,'tunica-estampada.jpg']
+  ],
+
+  reglas: [
+    ['Regla Orgánica Chica',170,'regla-chica.jpg'],
+    ['Regla Orgánica Mediana',200,'regla-mediana.jpg'],
+    ['Regla Orgánica Grande',230,'regla-grande.jpg'],
+    ['Regla Orgánica Flexible',230,'regla-flexible.jpg']
+  ]
+};
+
+let carrito = [];
+let categoriaActual = 'cuadernetas';
+
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'fixed top-6 right-6 bg-orange-500 text-white px-5 py-4 rounded-xl shadow z-50 font-bold';
+  t.innerText = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1600);
+}
+
+function mostrar(cat){
+  categoriaActual = cat;
+
+  ['cuadernetas','tunicas','reglas'].forEach(x => {
+    const b = document.getElementById('btn-' + x);
+    if(b){
+      b.className = 'px-5 py-3 rounded-xl font-bold transition ' + 
+      (x === cat ? 'bg-orange-500 text-white shadow' : 'bg-orange-100 text-orange-600 hover:bg-orange-200');
+    }
+  });
+
+  const box = document.getElementById('catalogo');
+  box.innerHTML = '';
+
+  productos[cat].forEach((p,i) => {
+    if(cat === 'cuadernetas' && p[2] === true){
+      const id = 'sem' + i;
+      box.innerHTML += `
+        <button onclick="toggleSem('${id}')" class="w-full text-left text-2xl font-black text-orange-500 mt-6 mb-3 border-b border-orange-200 pb-2">
+          ${p[0]} ▼
+        </button>
+        <div id="${id}" class="space-y-3">
+      `;
+    } else {
+      box.innerHTML += cardProducto(p);
+
+      if(cat === 'cuadernetas'){
+        const next = productos[cat][i + 1];
+        if(next && next[2] === true){
+          box.innerHTML += '</div>';
+        }
+      }
+    }
+  });
+
+  if(cat === 'cuadernetas'){
+    box.innerHTML += '</div>';
+  }
+}
+
+function cardProducto(p){
+  const tieneImagen = p[2] && p[2] !== true;
+
+  return `
+    <div class="flex justify-between items-center gap-4 border border-zinc-200 rounded-2xl p-4 mb-3 hover:shadow-md transition bg-white">
+      ${tieneImagen ? `<img src="${p[2]}" alt="${p[0]}" class="h-20 w-20 object-cover rounded-xl border">` : ''}
+      <div class="flex-1">
+        <p class="font-bold text-lg">${p[0]}</p>
+        <p class="text-orange-500 font-black">$${p[1]}</p>
+      </div>
+      <button onclick="agregar('${p[0]}',${p[1]})" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-xl font-bold">
+        Agregar
+      </button>
+    </div>
+  `;
+}
+
+function agregar(nombre, precio){
+  carrito.push([nombre, precio]);
+  render();
+  toast('✅ ' + nombre + ' agregado');
+}
+
+function filtrar(){
+  const q = document.getElementById('buscador').value.toLowerCase();
+
+  if(q === ''){
+    mostrar(categoriaActual);
+    return;
+  }
+
+  const box = document.getElementById('catalogo');
+  box.innerHTML = '';
+
+  productos[categoriaActual].forEach(p => {
+    if(p[2] !== true && p[0].toLowerCase().includes(q)){
+      box.innerHTML += cardProducto(p);
+    }
+  });
+}
+
+function toggleSem(id){
+  const e = document.getElementById(id);
+  e.style.display = e.style.display === 'none' ? 'block' : 'none';
+}
+
+function borrar(i){
+  carrito.splice(i,1);
+  render();
+}
+
+function render(){
+  const c = document.getElementById('carrito');
+  const t = document.getElementById('total');
+
+  window.totalCarrito = 0;
+  c.innerHTML = '';
+
+  if(carrito.length === 0){
+    c.innerHTML = '<p class="text-zinc-500">Vacío</p>';
+  }
+
+  carrito.forEach((x,i) => {
+    window.totalCarrito += x[1];
+
+    c.innerHTML += `
+      <div class="flex justify-between gap-2 border-b border-zinc-200 py-2">
+        <span>${x[0]} - $${x[1]}</span>
+        <button onclick="borrar(${i})" class="text-red-500 font-bold">✕</button>
+      </div>
+    `;
+  });
+
+  t.innerText = '$' + window.totalCarrito;
+  document.getElementById('miniCount').innerText = carrito.length;
+}
+
+function scrollCarrito(){
+  const el = document.getElementById('panelCarrito');
+  if(el){
+    el.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+}
 
 function hayTunicaEnCarrito(){
   return carrito.some(x => x[0].toLowerCase().includes("túnica"));
@@ -21,31 +301,32 @@ function abrirFormularioPedido(){
   modal.className = "fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4";
 
   modal.innerHTML = `
-    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-xl">
-      <h2 class="text-3xl font-bold text-orange-500 mb-4">Finalizar pedido</h2>
+    <div class="bg-white rounded-3xl p-6 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+      <h2 class="text-3xl font-black text-orange-500 mb-2">Finalizar pedido</h2>
+      <p class="text-zinc-600 mb-5">Completá tus datos para registrar el pedido.</p>
 
-      <div class="mb-4 bg-orange-50 border rounded-xl p-3 text-sm">
-        <p class="font-bold mb-2">Resumen del pedido:</p>
+      <div class="mb-5 bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm">
+        <p class="font-black text-orange-500 mb-2">Resumen del pedido</p>
         ${carrito.map(x => `<p>${x[0]} - $${x[1]}</p>`).join("")}
-        <p class="font-bold mt-2">Total: $${window.totalCarrito || 0}</p>
+        <p class="font-black mt-3 text-lg">Total: $${window.totalCarrito || 0}</p>
       </div>
 
-      <label class="block mb-2 font-semibold">Nombre completo</label>
-      <input id="pedidoNombre" class="w-full border rounded-xl px-4 py-2 mb-3" required>
+      <label class="block mb-2 font-bold">Nombre completo</label>
+      <input id="pedidoNombre" class="w-full border rounded-xl px-4 py-3 mb-4" placeholder="Ej: Juan Pérez">
 
-      <label class="block mb-2 font-semibold">Número de celular</label>
-      <input id="pedidoCelular" class="w-full border rounded-xl px-4 py-2 mb-3" required>
+      <label class="block mb-2 font-bold">Número de celular</label>
+      <input id="pedidoCelular" class="w-full border rounded-xl px-4 py-3 mb-4" placeholder="Ej: 099123456">
 
-      <label class="block mb-2 font-semibold">Mail</label>
-      <input id="pedidoMail" type="email" class="w-full border rounded-xl px-4 py-2 mb-3" required>
+      <label class="block mb-2 font-bold">Mail</label>
+      <input id="pedidoMail" type="email" class="w-full border rounded-xl px-4 py-3 mb-4" placeholder="Ej: nombre@gmail.com">
 
       ${
         tieneTunica ? `
-          <div class="border rounded-xl p-4 mb-4 bg-zinc-50">
-            <p class="font-bold text-orange-500 mb-3">Datos de la túnica</p>
+          <div class="border border-orange-200 rounded-2xl p-4 mb-5 bg-orange-50">
+            <p class="font-black text-orange-500 mb-3">Datos de la túnica</p>
 
-            <label class="block mb-2 font-semibold">Talle</label>
-            <select id="pedidoTalle" class="w-full border rounded-xl px-4 py-2 mb-3">
+            <label class="block mb-2 font-bold">Talle</label>
+            <select id="pedidoTalle" class="w-full border rounded-xl px-4 py-3 mb-4">
               <option value="">Seleccionar talle</option>
               <option>XS</option>
               <option>S</option>
@@ -55,8 +336,8 @@ function abrirFormularioPedido(){
               <option>XXL</option>
             </select>
 
-            <label class="block mb-2 font-semibold">¿Entallada?</label>
-            <select id="pedidoEntallada" class="w-full border rounded-xl px-4 py-2">
+            <label class="block mb-2 font-bold">¿Entallada?</label>
+            <select id="pedidoEntallada" class="w-full border rounded-xl px-4 py-3">
               <option value="">Seleccionar opción</option>
               <option>Sí</option>
               <option>No</option>
@@ -66,11 +347,11 @@ function abrirFormularioPedido(){
       }
 
       <div class="flex gap-3">
-        <button onclick="enviarPedido()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-xl">
+        <button onclick="enviarPedido()" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-xl font-bold">
           Enviar pedido
         </button>
 
-        <button onclick="cerrarFormularioPedido()" class="flex-1 bg-zinc-200 hover:bg-zinc-300 p-3 rounded-xl">
+        <button onclick="cerrarFormularioPedido()" class="flex-1 bg-zinc-200 hover:bg-zinc-300 p-4 rounded-xl font-bold">
           Cancelar
         </button>
       </div>
@@ -110,7 +391,7 @@ function enviarPedido(){
     }
   }
 
-  const productos = carrito.map(x => {
+  const productosPedido = carrito.map(x => {
     const esTunica = x[0].toLowerCase().includes("túnica");
 
     return {
@@ -124,7 +405,7 @@ function enviarPedido(){
     nombre,
     celular,
     mail,
-    productos
+    productos: productosPedido
   };
 
   fetch(URL_APPS_SCRIPT, {
@@ -142,3 +423,9 @@ function enviarPedido(){
     alert("Hubo un error al enviar el pedido.");
   });
 }
+
+mostrar('cuadernetas');
+</script>
+
+</body>
+</html>
